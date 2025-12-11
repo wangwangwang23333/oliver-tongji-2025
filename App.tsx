@@ -44,7 +44,7 @@ const INITIAL_STATS: CharacterStats = {
   social: 40,
   mood: 80,
   energy: 100,
-  money: 3000,
+  money: 100,
 };
 
 // Full character roster
@@ -66,7 +66,7 @@ const PRESET_ACTIONS = [
   { label: '去上课', type: 'academic', icon: BookOpen, desc: '在济事楼上软工导论。 (+学业)' },
   { label: '图书馆刷题', type: 'academic', icon: MapPin, desc: '去嘉定图书馆复习。 (+学业)' },
   { label: '实验室Coding', type: 'research', icon: FlaskConical, desc: '在智信馆写Bug。 (+科研, -心情)' },
-  { label: '操场夜跑', type: 'health', icon: Zap, desc: '跑个3公里打卡。 (+体力上限)' },
+  { label: '健身房', type: 'health', icon: Zap, desc: '健身一下？3公里打卡。 (+体力上限)' },
   { label: '去干饭', type: 'life', icon: Utensils, desc: '北苑还是满天星？' }, 
   { label: '社团活动', type: 'social', icon: Users, desc: '百团大战/社团聚会。 (+社交)' },
   { label: '兼职打工', type: 'work', icon: Briefcase, desc: '赚点生活费。 (需满足条件)' },
@@ -1077,7 +1077,7 @@ const App: React.FC = () => {
                 { id: 'coffee', label: '咖啡', cost: 8, effects: { energy: 25, mood: -2 }, desc: '体力 +25，心情 -2' },
                 { id: 'book', label: '参考书', cost: 60, effects: { academic: 6 }, desc: '学业 +6' },
                 { id: 'energy_drink', label: '能量饮料', cost: 25, effects: { energy: 50, mood: -5 }, desc: '体力 +50，心情 -5' },
-                { id: 'sleep_potion', label: '昏睡水', cost: 800, effects: { jumpToLastDay: true }, desc: '我等不及啦！直接推进到学期最后一天（不可逆）' },
+                { id: 'sleep_potion', label: '昏睡水', cost: 500, effects: { jumpToLastDay: true }, desc: '我等不及啦！直接推进到学期最后一天（不可逆）' },
               ].map(item => (
                 <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200">
                   <div>
