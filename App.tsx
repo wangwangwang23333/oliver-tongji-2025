@@ -1230,9 +1230,21 @@ const App: React.FC = () => {
                               if (resp.statChanges) {
                                 (Object.entries(resp.statChanges) as [string, any][]).forEach(([k, v]) => {
                                   const key = k as keyof CharacterStats;
-                                  mergedStats[key] = Math.min(100, Math.max(0, (mergedStats[key] || 0) + (v as number)));
+                                  const delta = v as number;
+
+                                  if (key === 'money') {
+                                    // 💰 钱：只保证不为负，不要上限
+                                    mergedStats.money = Math.max(0, (mergedStats.money ?? 0) + delta);
+                                  } else {
+                                    // 其他属性：仍然 0–100
+                                    mergedStats[key] = Math.min(
+                                      100,
+                                      Math.max(0, (mergedStats[key] ?? 0) + delta)
+                                    );
+                                  }
                                 });
                               }
+
 
                               let rels = curr.relationships;
                               if (resp.relationshipUpdates) {
