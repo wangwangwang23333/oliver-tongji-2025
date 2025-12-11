@@ -54,12 +54,13 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   { name: 'Micha', affinity: 10, status: 'Stranger', description: '绩点竞争对手，总是在图书馆抢座' },
   { name: '东海', affinity: 10, status: 'Stranger', description: '研究生学长/学姐，实验室负责人' },
   // Friends
-  { name: '王立友', affinity: 40, status: 'Friend', description: '你的室友，深夜代码搭子' },
-  { name: '汪明杰', affinity: 40, status: 'Stranger', description: '嘉定图书馆常驻用户' },
+  { name: '王立友', affinity: 35, status: 'Friend', description: '你的室友，深夜代码搭子' },
+  { name: '汪明杰', affinity: 35, status: 'Friend', description: '嘉定图书馆常驻用户' },
   { name: '香宁雨', affinity: 10, status: 'Stranger', description: '吉他社社长，现充代表' },
   { name: '陈垲昕', affinity: 10, status: 'Stranger', description: '智信馆里的科研大神' },
-  { name: '唐啸', affinity: 10, status: 'Stranger', description: '校篮球队主力' },
-  { name: '方必诚', affinity: 10, status: 'Stranger', description: '在嘉实广场摆摊的创业达人' },
+  { name: '唐啸', affinity: 10, status: 'Stranger', description: '时尚达人，校篮球队主力' },
+  { name: '方必诚', affinity: 10, status: 'Stranger', description: '在嘉实广场摆摊的创业达人，奶龙爱好者' },
+  { name: '赵敏', affinity: 10, status: 'Stranger', description: '热爱游戏' },
 ];
 
 const PRESET_ACTIONS = [
