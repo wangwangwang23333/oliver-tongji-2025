@@ -39,9 +39,9 @@ import { generateTurn, generateEnding, requestBirthdayImage, generateRandomEvent
 const MAX_WEEKS = 2;
 
 const INITIAL_STATS: CharacterStats = {
-  academic: 50,
+  academic: 30,
   research: 30, // Software Engineering starts slightly lower, needs grinding
-  social: 40,
+  social: 30,
   mood: 80,
   energy: 100,
   money: 100,
@@ -52,7 +52,7 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   // Love Interests
   { name: '西海', affinity: 10, status: 'Stranger', description: '经管学院的艺术生，常在三好坞写生' },
   { name: 'Micha', affinity: 10, status: 'Stranger', description: '绩点竞争对手，总是在图书馆抢座' },
-  { name: '东海', affinity: 10, status: 'Stranger', description: '研究生学长/学姐，实验室负责人' },
+  { name: '东海', affinity: 10, status: 'Stranger', description: '研究生学姐，实验室负责人' },
   // Friends
   { name: '王立友', affinity: 35, status: 'Friend', description: '你的室友，深夜代码搭子' },
   { name: '汪明杰', affinity: 35, status: 'Friend', description: '嘉定图书馆常驻用户' },
@@ -123,6 +123,8 @@ const App: React.FC = () => {
   const [turnsSinceLastEvent, setTurnsSinceLastEvent] = useState(0);
   const [shouldTriggerEvent, setShouldTriggerEvent] = useState(false);
   const [eventError, setEventError] = useState<string | null>(null);
+  // Achievements: store birthday CGs (image URLs)
+  const [achievements, setAchievements] = useState<Array<{ id: string; url: string; createdAt: string }>>([]);
   
   // Game State
   const playerName = '梁乔';
@@ -166,20 +168,29 @@ const App: React.FC = () => {
   }, [gameState.week, gameState.gameEnding, endingStage]);
 
   // Generate birthday image when entering stage 3 (birthday)
+  // Birthday image generation is triggered when endings are produced (handled in triggerEnding)
+
+  // Load achievements from localStorage on mount
   useEffect(() => {
-    if (endingStage === 3 && gameState.gameEnding && !birthdayImageUrl && !birthdayImageLoading) {
-      setBirthdayImageLoading(true);
-      requestBirthdayImage(gameState.gameEnding.birthday)
-        .then((result) => {
-          setBirthdayImageUrl(result.imageUrl);
-          setBirthdayImageLoading(false);
-        })
-        .catch((error) => {
-          console.error('Failed to generate birthday image:', error);
-          setBirthdayImageLoading(false);
-        });
+    try {
+      const raw = localStorage.getItem('achievements');
+      if (raw) {
+        const parsed = JSON.parse(raw) as Array<{ id: string; url: string; createdAt: string }>;
+        setAchievements(parsed);
+      }
+    } catch (e) {
+      console.warn('Failed to load achievements', e);
     }
-  }, [endingStage, gameState.gameEnding, birthdayImageUrl, birthdayImageLoading]);
+  }, []);
+
+  // Persist achievements to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('achievements', JSON.stringify(achievements));
+    } catch (e) {
+      console.warn('Failed to save achievements', e);
+    }
+  }, [achievements]);
 
   // Handle random event trigger
   useEffect(() => {
@@ -216,7 +227,7 @@ const App: React.FC = () => {
       wishes: finalWishes,
       history: [{
         id: 'init',
-        text: `欢迎来到同济大学嘉定校区，${playerName}！你是软件工程专业的新生。济事楼的代码、满天星的美食、还有未知的邂逅都在等你。这学期共有14天，为了那个完美的结局，出发吧！`,
+        text: `欢迎来到同济大学嘉定校区，${playerName}！你是软件工程专业的老油条了。济事楼的代码、满天星的美食、还有未知的邂逅都在等你。这学期共有14天，为了那个完美的结局，出发吧！`,
         type: 'system',
         turn: 0
       }]
@@ -401,15 +412,52 @@ const App: React.FC = () => {
      setEndingLoading(true); // Set ending loading flag instead of general loading
      try {
        // @ts-ignore - The service now returns an object, not string
-       const endingData = await generateEnding(gameState); 
-       setGameState(prev => ({...prev, isGameOver: true, gameEnding: endingData}));
+       const endingData = await generateEnding(gameState);
+       setGameState(prev => ({ ...prev, isGameOver: true, gameEnding: endingData }));
        setEndingStage(1); // Start with Career
+
+       
      } catch (e) {
        console.error(e);
-       alert("找不到结局啦，你是不是一口气烧了学校的档案室？");
+       alert("生成结局失败，请重试");
        setEndingLoading(false); // Reset loading on error
      }
   };
+
+    // Ensure birthday image is requested if we reach the birthday ending page
+    useEffect(() => {
+      const shouldFetch = gameState.gameEnding && endingStage === 3 && !birthdayImageUrl && !birthdayImageLoading;
+      if (!shouldFetch) return;
+
+      let mounted = true;
+      (async () => {
+        try {
+          setBirthdayImageLoading(true);
+          requestBirthdayImage(gameState.gameEnding.birthday)
+            .then((result) => {
+              setBirthdayImageUrl(result.imageUrl);
+              setBirthdayImageLoading(false);
+              setAchievements(prev => {
+                if (!result.imageUrl) return prev;
+                if (prev.some(a => a.url === result.imageUrl)) return prev;
+                const entry = { id: Date.now().toString(), url: result.imageUrl, createdAt: new Date().toISOString() };
+                return [entry, ...prev];
+              });
+            })
+            .catch((error) => {
+              console.error('Failed to generate birthday image:', error);
+              setBirthdayImageLoading(false);
+            });
+         
+        } catch (err) {
+          console.error('Failed to generate birthday image on reaching stage 3:', err);
+        } finally {
+          if (mounted) setBirthdayImageLoading(false);
+        }
+      })();
+
+      return () => { mounted = false; };
+    }, [gameState.gameEnding, endingStage, birthdayImageUrl, birthdayImageLoading]);
 
   const triggerRandomEvent = async () => {
     setEventLoading(true);
@@ -564,6 +612,23 @@ const App: React.FC = () => {
             </div>
             <button onClick={() => setSetupStep('wishes')} className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold mt-4 flex items-center justify-center gap-2">下一步 <ChevronRight size={18}/></button>
             {hasSave && <button onClick={loadGame} className="w-full bg-white border border-slate-300 text-slate-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Upload size={18}/> 读取存档</button>}
+          
+          {/* Achievements on the home/setup page */}
+          <div className="mt-6">
+            <h3 className="text-sm font-bold text-slate-700 mb-2">已收藏的生日祝贺</h3>
+            {achievements.length === 0 ? (
+              <div className="text-xs text-slate-400">尚未获得任何生日祝贺，完成学期结局后可在此保存。</div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {achievements.map(a => (
+                  <div key={a.id} className="relative border rounded overflow-hidden">
+                    <img src={a.url} alt="cg" className="w-full h-20 object-cover cursor-pointer" onClick={() => window.open(a.url, '_blank')} />
+                    <button onClick={() => setAchievements(prev => prev.filter(x => x.id !== a.id))} className="absolute top-1 right-1 text-xs bg-white/80 px-2 py-0.5 rounded">删除</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           </div>
         </div>
       </div>
@@ -861,6 +926,8 @@ const App: React.FC = () => {
                 )}
              </div>
            </div>
+         
+
         </div>
       </div>
 
@@ -1081,14 +1148,14 @@ const App: React.FC = () => {
                 { id: 'coffee', label: '咖啡', cost: 8, effects: { energy: 25, mood: -2 }, desc: '体力 +25，心情 -2' },
                 { id: 'book', label: '参考书', cost: 60, effects: { academic: 6 }, desc: '学业 +6' },
                 { id: 'energy_drink', label: '能量饮料', cost: 25, effects: { energy: 50, mood: -5 }, desc: '体力 +50，心情 -5' },
-                { id: 'back_potion', label: '再给我一次机会吧', cost: 600, effects: { jumpToFirstDay: true }, desc: '回到学期的第一天' },
-                { id: 'sleep_potion', label: '昏睡水', cost: 10, effects: { jumpToLastDay: true }, desc: '我等不及啦！直接推进到学期最后一天（不可逆）' },
+                { id: 'back_potion', label: '再给我一次机会吧', cost: 600, effects: { jumpToFirstDay: true }, desc: '回到第一天' },
+                { id: 'sleep_potion', label: '昏睡水', cost: 10, effects: { jumpToLastDay: true }, desc: '我等不及啦！直接推进到最后一天（不可逆）' },
               ].map(item => (
                 <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200">
                   <div>
                     <div className="font-bold text-slate-800">{item.label}</div>
                     <div className="text-xs text-slate-500">价格：¥{item.cost}</div>
-+                    <div className="text-xs text-slate-400 mt-1">{item.desc}</div>
+                    <div className="text-xs text-slate-400 mt-1">{item.desc}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -1112,6 +1179,13 @@ const App: React.FC = () => {
                           let newState: GameState = { ...prev, stats: newStats };
 
                           // Special effects: jump to last day
+                         // Add history log
+                          const log: LogEntry = {
+                            id: Date.now().toString(),
+                            text: `你在商店购买了 ${item.label}（¥${item.cost}）` + (item.effects.jumpToLastDay ? ' 并服下了它，时间被推进到了最后一天。' : ''),
+                            type: 'event',
+                            turn: prev.week * 100 + prev.day * 10,
+                          };
                           if (item.effects.jumpToLastDay) {
                             newState = {
                               ...newState,
@@ -1127,15 +1201,11 @@ const App: React.FC = () => {
                               day: 1,
                               timeSlot: TimeSlot.Morning,
                             };
+                            log.text = `你在商店购买了 ${item.label}（¥${item.cost}）` + (item.effects.jumpToLastDay ? ' 并服下了它，时间被推进到了第一天。' : '');
+                            
                           }
 
-                          // Add history log
-                          const log: LogEntry = {
-                            id: Date.now().toString(),
-                            text: `你在商店购买了 ${item.label}（¥${item.cost}）` + (item.effects.jumpToLastDay ? ' 并服下了它，时间被推进到了学期最后一天。' : ''),
-                            type: 'event',
-                            turn: prev.week * 100 + prev.day * 10,
-                          };
+                         
 
                           return { ...newState, history: [...prev.history, log] };
                         });
@@ -1400,7 +1470,8 @@ const App: React.FC = () => {
                           if (gameState.stats.money < opt.cost) { alert('钱不够了'); return; }
                           const prev = gameState;
                           const newStatsBase = { ...prev.stats };
-                          // newStatsBase.money = Math.max(0, newStatsBase.money - opt.cost);
+                          // 扣钱：购买食物需要花费
+                          newStatsBase.money = Math.max(0, (newStatsBase.money || 0) - opt.cost);
                           newStatsBase.mood = Math.min(100, (newStatsBase.mood || 0) + opt.mood);
                           newStatsBase.energy = Math.min(100, (newStatsBase.energy || 0) + opt.energy);
 
@@ -1421,11 +1492,18 @@ const App: React.FC = () => {
                             setGameState(curr => {
                               const mergedStats = { ...curr.stats };
                               if (resp.statChanges) {
-                                (Object.entries(resp.statChanges) as [string, any][]).forEach(([k, v]) => {
-                                  const key = k as keyof CharacterStats;
-                                  mergedStats[key] = Math.min(100, Math.max(0, (mergedStats[key] || 0) + (v as number)));
-                                });
-                              }
+                                  (Object.entries(resp.statChanges) as [string, any][]).forEach(([k, v]) => {
+                                    const key = k as keyof CharacterStats;
+                                    const delta = v as number;
+                                    if (key === 'money') {
+                                      // 金钱不应被 0-100 限制，只保证不为负
+                                      mergedStats.money = Math.max(0, (mergedStats.money ?? 0) + delta);
+                                    } else {
+                                      // 其它属性仍然在 0-100 范围
+                                      mergedStats[key] = Math.min(100, Math.max(0, (mergedStats[key] || 0) + delta));
+                                    }
+                                  });
+                                }
 
                               let rels = curr.relationships;
                               if (resp.relationshipUpdates) {
