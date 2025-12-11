@@ -186,11 +186,16 @@ const App: React.FC = () => {
   // Persist achievements to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('achievements', JSON.stringify(achievements));
+      const raw = localStorage.getItem('achievements');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setAchievements(parsed);
+      }
     } catch (e) {
-      console.warn('Failed to save achievements', e);
+      console.error('Failed to load achievements from localStorage', e);
     }
-  }, [achievements]);
+  }, []);
 
   // Handle random event trigger
   useEffect(() => {
@@ -429,34 +434,25 @@ const App: React.FC = () => {
       const shouldFetch = gameState.gameEnding && endingStage === 3 && !birthdayImageUrl && !birthdayImageLoading;
       if (!shouldFetch) return;
 
-      let mounted = true;
-      (async () => {
-        try {
-          setBirthdayImageLoading(true);
-          requestBirthdayImage(gameState.gameEnding.birthday)
-            .then((result) => {
-              setBirthdayImageUrl(result.imageUrl);
-              setBirthdayImageLoading(false);
-              setAchievements(prev => {
-                if (!result.imageUrl) return prev;
-                if (prev.some(a => a.url === result.imageUrl)) return prev;
-                const entry = { id: Date.now().toString(), url: result.imageUrl, createdAt: new Date().toISOString() };
-                return [entry, ...prev];
-              });
-            })
-            .catch((error) => {
-              console.error('Failed to generate birthday image:', error);
-              setBirthdayImageLoading(false);
+      setBirthdayImageLoading(true);
+        requestBirthdayImage(gameState.gameEnding.birthday)
+          .then((result) => {
+            setBirthdayImageUrl(result.imageUrl);
+            setBirthdayImageLoading(false);
+            setAchievements(prev => {
+              if (!result.imageUrl) return prev;
+              if (prev.some(a => a.url === result.imageUrl)) return prev;
+              const entry = { id: Date.now().toString(), url: result.imageUrl, createdAt: new Date().toISOString() };
+              const next =  [entry, ...prev];
+              localStorage.setItem('achievements', JSON.stringify(next));
+              return next;
             });
-         
-        } catch (err) {
-          console.error('Failed to generate birthday image on reaching stage 3:', err);
-        } finally {
-          if (mounted) setBirthdayImageLoading(false);
-        }
-      })();
+          })
+          .catch((error) => {
+            console.error('Failed to generate birthday image:', error);
+            setBirthdayImageLoading(false);
+          });
 
-      return () => { mounted = false; };
     }, [gameState.gameEnding, endingStage, birthdayImageUrl, birthdayImageLoading]);
 
   const triggerRandomEvent = async () => {
