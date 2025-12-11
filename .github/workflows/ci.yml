@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]   # 你主分支不是 main 的话改成对应名字
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node，并开启 npm 缓存
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22           # 对应你 @types/node 22，或者用 20 也行
+          cache: npm
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 构建 Vite 项目
+      - name: Build
+        run: npm run build
