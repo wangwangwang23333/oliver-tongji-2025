@@ -167,7 +167,7 @@ const App: React.FC = () => {
 
   // Generate birthday image when entering stage 3 (birthday)
   useEffect(() => {
-    if (endingStage === 3 && gameState.gameEnding && !birthdayImageUrl && !birthdayImageLoading) {
+    if (endingStage === 1 && gameState.gameEnding && !birthdayImageUrl && !birthdayImageLoading) {
       setBirthdayImageLoading(true);
       requestBirthdayImage(gameState.gameEnding.birthday)
         .then((result) => {
