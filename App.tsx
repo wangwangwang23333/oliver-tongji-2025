@@ -75,13 +75,13 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   // Friends (start as strangers)
   {
     name: '王立友',
-    affinity: 20,
+    affinity: 25,
     status: 'Acquaintance',
     description: '小胖墩。沉迷英雄联盟；嘴上说减肥，手里抱外卖。',
   },
   {
     name: '汪明杰',
-    affinity: 20,
+    affinity: 25,
     status: 'Acquaintance',
     description: '好朋友。嘴贫但靠谱，擅长用段子化解尴尬；偶尔会突然认真起来。',
   },
@@ -93,7 +93,7 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   },
   {
     name: '陈垲昕',
-    affinity: 20,
+    affinity: 25,
     status: 'Stranger',
     description: '科研大佬。潮汕人，爱摇滚；三句不离论文和实验数据；为人严肃认真。',
   },
