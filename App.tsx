@@ -952,8 +952,39 @@ const App: React.FC = () => {
   // 1. Setup Screen
   if (setupStep === 'gender') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full animate-fadeIn">
+<div className="min-h-screen relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+  {/* 😅 背景循环层（不挡交互） */}
+  <div className="absolute inset-0 pointer-events-none opacity-20">
+    {/* layer 1 */}
+    <div className="absolute -inset-[35%] rotate-45">
+      <div className="emoji-scroll flex flex-wrap gap-6">
+        {Array.from({ length: 2600 }).map((_, i) => (
+          <span key={`e1-${i}`} className="select-none text-2xl md:text-3xl">
+            😅
+          </span>
+        ))}
+      </div>
+    </div>
+
+    {/* layer 2（反向更慢一点，叠加更“循环”） */}
+    <div className="absolute -inset-[35%] rotate-45">
+      <div className="emoji-scroll2 flex flex-wrap gap-8">
+        {Array.from({ length: 220 }).map((_, i) => (
+          <span key={`e2-${i}`} className="select-none text-xl md:text-2xl">
+            😅
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {/* 你的白色卡片放到最上层 */}
+  <div className="relative z-10 bg-white p-8 rounded-2xl shadow-xl max-w-md w-full animate-fadeIn">
+    {/* ...你原本的内容... */}
+
+
+          
+          
           <h1 className="text-3xl font-bold text-slate-800 mb-2">尚丙奇的学期</h1>
           <p className="text-slate-500 mb-6">同济软件模拟器</p>
           <div className="space-y-4">
@@ -1077,6 +1108,19 @@ const App: React.FC = () => {
 
           </div>
         </div>
+
+         <style>{`
+    @keyframes emojiScroll {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-240px, -240px, 0); }
+    }
+    @keyframes emojiScroll2 {
+      0% { transform: translate3d(-120px, -120px, 0); }
+      100% { transform: translate3d(120px, 120px, 0); }
+    }
+    .emoji-scroll { animation: emojiScroll 18s linear infinite; }
+    .emoji-scroll2 { animation: emojiScroll2 28s linear infinite; opacity: 0.75; }
+  `}</style>
       </div>
     )
   }
