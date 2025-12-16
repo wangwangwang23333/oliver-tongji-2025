@@ -76,13 +76,13 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   {
     name: '王立友',
     affinity: 20,
-    status: 'Stranger',
+    status: 'Acquaintance',
     description: '小胖墩。沉迷英雄联盟；嘴上说减肥，手里抱外卖。',
   },
   {
     name: '汪明杰',
     affinity: 20,
-    status: 'Stranger',
+    status: 'Acquaintance',
     description: '好朋友。嘴贫但靠谱，擅长用段子化解尴尬；偶尔会突然认真起来。',
   },
   {
@@ -267,7 +267,7 @@ const UNLOCK_RULES: UnlockRule[] = [
     cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/785c6996523e032fce01075bbbfdf4fa-20251216-213456.png',
     when: (state) => {
       const r = state.relationships.find(x => x.name === '王立友');
-      const knownWang = !!r && (r.status !== 'Stranger' || r.affinity > 20); // “认识”
+      const knownWang = !!r && (r.status !== 'Stranger' || r.affinity >=40); // “认识”
       const moodOK = state.stats.mood >= 60;
       return knownWang && moodOK;
     },
