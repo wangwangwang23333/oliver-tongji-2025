@@ -127,11 +127,11 @@ const App: React.FC = () => {
   const [achievements, setAchievements] = useState<Array<{ id: string; url: string; createdAt: string }>>([]);
   
   // Game State
-  const playerName = '梁乔';
+  const playerName = '尚丙奇';
   const [playerGender, setPlayerGender] = useState<Gender>(Gender.Male);
   
   const [gameState, setGameState] = useState<GameState>({
-    playerName: '梁乔',
+    playerName: '尚丙奇',
     gender: Gender.Male,
     week: 1,
     day: 1,
@@ -605,7 +605,7 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full animate-fadeIn">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">梁乔的学期</h1>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">尚丙奇的学期</h1>
           <p className="text-slate-500 mb-6">同济大学软工生活模拟器</p>
           <div className="space-y-4">
             <p className="font-medium text-slate-700">请选择你的性别</p>
