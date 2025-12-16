@@ -304,7 +304,7 @@ const UNLOCK_RULES: UnlockRule[] = [
     id: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/bdb58ff785eb6dd7043efd65ed707a8d-20251216-215003.jpg',
     title: '你你你你要跳舞吗',
     description: '社交值上来了：你被学长学姐抓去参加学院迎新晚会的舞蹈节目，社死与高光一线之隔。',
-    cgUrl: 'https://your-cg-url-here.png',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/bdb58ff785eb6dd7043efd65ed707a8d-20251216-215003.jpg',
     when: (state) => state.stats.social > 40,
     actionLabel: '你你你你要跳舞吗',
     actionPrompt:
