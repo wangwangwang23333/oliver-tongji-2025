@@ -36,7 +36,7 @@ import { GameState, Gender, TimeSlot, LogEntry, CharacterStats, Relationship, Me
 import { generateTurn, generateEnding, requestBirthdayImage, generateRandomEvent } from './services/geminiService';
 
 // --- Constants & Init ---
-const MAX_WEEKS = 2;
+const MAX_WEEKS = 3;
 
 const INITIAL_STATS: CharacterStats = {
   academic: 30,
@@ -49,30 +49,78 @@ const INITIAL_STATS: CharacterStats = {
 
 // Full character roster
 const INITIAL_RELATIONSHIPS: Relationship[] = [
-  // Love Interests
-  { name: '西海', affinity: 10, status: 'Stranger', description: '文科，喜欢塔罗牌、中医' },
-  { name: 'Micha', affinity: 10, status: 'Stranger', description: '经管学院，数学不好绩点竞争对手，总是在图书馆抢座' },
-  { name: '东海', affinity: 10, status: 'Stranger', description: '研究生学姐，实验室负责人' },
-  // Friends
-  { name: '王立友', affinity: 35, status: 'Acquaintance', description: '你的室友，深夜代码搭子' },
-  { name: '汪明杰', affinity: 35, status: 'Acquaintance', description: '嘉定图书馆常驻用户' },
-  { name: '香宁雨', affinity: 10, status: 'Stranger', description: '吉他社社长，二次元' },
-  { name: '陈垲昕', affinity: 10, status: 'Stranger', description: '智信馆里的科研大神' },
-  { name: '唐啸', affinity: 10, status: 'Stranger', description: '时尚达人，校篮球队主力' },
-  { name: '方必诚', affinity: 10, status: 'Stranger', description: '在嘉实广场摆摊的创业达人，奶龙爱好者' },
-  { name: '赵敏', affinity: 10, status: 'Stranger', description: '热爱游戏' },
+  // Roommates
+  {
+    name: '梁乔',
+    affinity: 30,
+    status: 'Acquaintance',
+    description:
+      '室友。运动狂魔，变形金刚手办党，三分钟热度；爱在群里发抽象表情包，说话抽象；常和你一起吐槽“🐻”（李振宇）。',
+  },
+  {
+    name: '李振宇',
+    affinity: 30,
+    status: 'Acquaintance',
+    description:
+      '室友。健身狂魔，宿舍里经常整活（蒸包子、熬夜不睡等）；和赵翀吵架专业户；和你说话有点轻浮，你私下叫他“🐻”。',
+  },
+  {
+    name: '赵翀',
+    affinity: 30,
+    status: 'Acquaintance',
+    description:
+      '室友。学生会红人，热情开朗但常被学生会工作拖累学业；天天热衷搭讪学院女生，爱跟你吐槽搭讪失败史。',
+  },
+
+  // Friends (start as strangers)
+  {
+    name: '王立友',
+    affinity: 10,
+    status: 'Stranger',
+    description: '小胖墩。沉迷英雄联盟；嘴上说减肥，手里抱外卖。',
+  },
+  {
+    name: '汪明杰',
+    affinity: 10,
+    status: 'Stranger',
+    description: '好朋友。嘴贫但靠谱，擅长用段子化解尴尬；偶尔会突然认真起来。',
+  },
+  {
+    name: '香宁雨',
+    affinity: 10,
+    status: 'Stranger',
+    description: '二次元。爱打瓦罗兰特；在 SAP 实习，社交圈很广；追星肖战。',
+  },
+  {
+    name: '陈垲昕',
+    affinity: 10,
+    status: 'Stranger',
+    description: '科研大佬。潮汕人，爱摇滚；三句不离论文和实验数据；为人严肃认真。',
+  },
+
+  // Mentor (also starts as stranger)
+  {
+    name: '张荣庆',
+    affinity: 10,
+    status: 'Stranger',
+    description: '不严厉的导师。年轻有为，私下爱玩各种游戏；没事就来 push 你的科研进度。',
+  },
+  
 ];
 
+
+
 const PRESET_ACTIONS = [
-  { label: '去上课', type: 'academic', icon: BookOpen, desc: '在济事楼上软工导论。 (+学业)' },
-  { label: '图书馆刷题', type: 'academic', icon: MapPin, desc: '去嘉定图书馆复习。 (+学业)' },
-  { label: '实验室Coding', type: 'research', icon: FlaskConical, desc: '在智信馆写Bug。 (+科研, -心情)' },
-  { label: '健身房', type: 'health', icon: Zap, desc: '健身一下？3公里打卡。 (+体力上限)' },
-  { label: '去干饭', type: 'life', icon: Utensils, desc: '北苑还是满天星？' }, 
-  { label: '社团活动', type: 'social', icon: Users, desc: '百团大战/社团聚会。 (+社交)' },
-  { label: '兼职打工', type: 'work', icon: Briefcase, desc: '赚点生活费。 (需满足条件)' },
+  { label: '去上课', type: 'academic', icon: BookOpen, desc: '在济事楼上课。 (+学业)' },
+  { label: '图书馆刷题', type: 'academic', icon: MapPin, desc: '去图书馆复习刷题。 (+学业, -心情少许)' },
+  { label: '实验室Coding', type: 'research', icon: FlaskConical, desc: '在济事楼写代码/改Bug。 (+科研, -心情)' },
+  { label: '健身房', type: 'health', icon: Zap, desc: '健身一下，3公里打卡。 (+体力上限, -体力)' },
+  { label: '去干饭', type: 'life', icon: Utensils, desc: '北苑还是满天星？ (+体力, +心情少许)' }, 
+  { label: '学生活动', type: 'social', icon: Users, desc: '学生会/社团/聚会。 (+社交, 可能触发事件)' },
+  { label: '兼职打工', type: 'work', icon: Briefcase, desc: '赚点生活费。 (需体力/时间/人脉满足条件)' },
   { label: '宿舍躺平', type: 'rest', icon: Smile, desc: '刷剧、打游戏。 (+心情, +体力)' },
 ];
+
 
 // Wish Options
 const CAREER_WISHES: Wish[] = [
@@ -81,15 +129,239 @@ const CAREER_WISHES: Wish[] = [
   { id: 'career_money', type: 'career', label: '小富即安', description: '靠自己的双手存款达到 8000 元', targetValue: 8000, isCompleted: false }, // Check Money
 ];
 
-const LOVE_WISHES: Wish[] = [
-  { id: 'love_date', type: 'love', label: '不再孤单', description: '和一个心动的人建立深厚羁绊', targetValue: 60, isCompleted: false }, // Check max affinity
-  { id: 'love_popular', type: 'love', label: '万人迷', description: '和至少 3 个人关系达到“朋友”以上', targetValue: 3, isCompleted: false }, // Check friend count
+const FRIENDSHIP_WISHES: Wish[] = [
+  {
+    id: 'friend_bond',
+    type: 'love',
+    label: '不再孤单',
+    description: '和至少 1 个室友/朋友建立深厚羁绊',
+    targetValue: 80,
+    isCompleted: false,
+  }, // Check max affinity
+  {
+    id: 'friend_popular',
+    type: 'love',
+    label: '人脉开花',
+    description: '和至少 3 个人关系达到“朋友”以上',
+    targetValue: 3,
+    isCompleted: false,
+  }, // Check friend count
 ];
+
 
 const SOCIAL_WISHES: Wish[] = [
   { id: 'social_king', type: 'social', label: '嘉定交际花', description: '社交能力爆表，认识所有人', targetValue: 85, isCompleted: false }, // Check Social
   { id: 'social_party', type: 'social', label: '派对动物', description: '举办一次完美的派对（心情极佳）', targetValue: 95, isCompleted: false }, // Check Mood
 ];
+
+
+/**
+ * 解锁规则定义
+ */
+type UnlockRule = {
+  id: string;
+  title: string;
+  description: string;
+  cgUrl: string;                 // 真实照片路径（public 下）
+  when: (state: GameState) => boolean; // ✅你要改条件就改这里
+  actionLabel?: string;          // 可选：点“立刻体验”时传给 handleAction
+  actionPrompt?: string;         // 可选：额外提示词
+};
+
+const UNLOCK_RULES: UnlockRule[] = [
+  {
+  id: 'event_covid_secret_dinner',
+  title: '疫情偷偷聚餐',
+  description: '特殊时期的嘉定有点安静，但你们还是凑在一起：一顿“偷偷的聚餐”，把压抑吃成了热气腾腾的安全感。',
+  cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/8f86a4f55b9820c265685ed6c65b3cd4-20251216-215714.jpg',
+  when: (state) => {
+    const need = ['王立友', '汪明杰', '梁乔'];
+    return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 40);
+  },
+  actionLabel: '疫情偷偷聚餐',
+  actionPrompt:
+    '这是一个已解锁的特殊事件，请生成“疫情偷偷聚餐”剧情：背景是疫情期间校园/宿舍管理更严格（2022年），主角尚丙奇和王立友/汪明杰/梁乔想办法凑一顿饭（外卖、泡面、偷偷小馆、宿舍小桌任选其一）；重点写“压抑中的温暖”和兄弟互动：汪明杰用段子化解焦虑，王立友温和长篇大论讲道理，梁乔抽象玩梗；体现有得有失（心情上升但有点紧张/花钱/体力消耗）；结尾用CG照片定格收束。',
+},
+  {
+    id: 'event_huangshan_trip',
+    title: '黄山旅游',
+    description: '你们的关系升温到了“能约出来”的程度：第一次兄弟旅行，黄山见。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/img1-20251216-211624.png',
+    when: (state) => {
+      const need = ['王立友', '汪明杰', '梁乔'];
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 60);
+    },
+    actionLabel: '黄山旅游',
+    actionPrompt: '这是一个已解锁的特殊事件，请生成“黄山旅游”剧情；氛围参考CG真实照片（旅行、兄弟互动、路上小插曲），结尾给一个“照片定格”的桥段。',
+  },
+
+  {
+    id: 'event_lishui_trip',
+    title: '丽水之旅',
+    description: '你们已经是能一起“说走就走”的兄弟团：丽水的山水与夜聊都安排上。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251216212336_39%20(1)-20251216-212433.png',
+    when: (state) => {
+      const need = ['王立友', '汪明杰', '梁乔'];
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 80);
+    },
+    actionLabel: '丽水之旅',
+    actionPrompt: '这是一个已解锁的特殊事件，请生成“丽水之旅”剧情；氛围参考CG真实照片（旅行vlog感、兄弟嘴碎互损、夜宵/民宿聊天），带一点成长感。',
+  },
+
+  {
+    id: 'event_biye_trip',
+    title: '毕业照',
+    description: '学期进入尾声：大家终于凑齐，拍下这张属于你们的“阶段性毕业照”。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/811b39e5f36b04feaca558f261c95a69-20251216-212821.png',
+    when: (state) => {
+      const need = ['王立友', '汪明杰', '梁乔', '香宁雨', '李振宇'];
+      const affinityOK = need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 30);
+
+      // ✅最后 5 天：通用写法（不怕你以后改 MAX_WEEKS）
+      const totalDays = MAX_WEEKS * 7;
+      const absDay = (state.week - 1) * 7 + state.day; // 1..totalDays
+      const isLast5Days = absDay >= totalDays - 4;
+
+      return affinityOK && isLast5Days;
+    },
+    actionLabel: '毕业照',
+    actionPrompt: '这是一个已解锁的特殊事件，请生成“毕业照”剧情；围绕大家凑齐拍照的过程（排队、互损、尚丙奇作为摄影师指挥、临时状况），最后用CG照片作为定格收束。',
+  },
+  {
+    id: 'event_graduation_trip',
+    title: '毕业旅游',
+    description: '学期进入最后冲刺：你们决定把疲惫留在嘉定，把回忆带去远方。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/38a803a50acc4173121b6f8c787670cc-20251216-213430.jpeg', // 你换成自己上传的真实照片链接
+    when: (state) => {
+      // “认识”= 至少不再是 Stranger（更稳：用 affinity>20 或 status!==Stranger）
+      const need = ['汪明杰', '王立友', '香宁雨', '梁乔'];
+      const knownOK = need.every((name) => {
+        const r = state.relationships.find((x) => x.name === name);
+        return !!r && (r.affinity > 20 || r.status !== 'Stranger');
+      });
+
+      // 最后 3 天
+      const totalDays = MAX_WEEKS * 7;
+      const absDay = (state.week - 1) * 7 + state.day; // 1..totalDays
+      const isLast3Days = absDay >= totalDays - 2;
+
+      return knownOK && isLast3Days;
+    },
+    actionLabel: '毕业旅游',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“毕业旅游”剧情；氛围参考CG真实照片（群像、打卡、夜聊、互损、收尾有“照片定格”），人物要包含汪明杰/王立友/香宁雨/梁乔和主角尚丙奇。',
+  },
+  {
+    id: 'event_game_with_wangliyou',
+    title: '和王立友一起打游戏',
+    description: '你和王立友已经熟了，心情也不错：今晚开黑！',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/785c6996523e032fce01075bbbfdf4fa-20251216-213456.png',
+    when: (state) => {
+      const r = state.relationships.find(x => x.name === '王立友');
+      const knownWang = !!r && (r.status !== 'Stranger' || r.affinity > 20); // “认识”
+      const moodOK = state.stats.mood >= 60;
+      return knownWang && moodOK;
+    },
+    actionLabel: '和王立友一起打游戏',
+    actionPrompt: '这是一个已解锁的特殊事件，请生成“和王立友一起打游戏”剧情（宿舍/开黑氛围、嘴上减肥手里外卖的梗、轻松搞笑收尾用CG定格）。',
+  },
+
+  {
+  id: 'event_rafting_with_xiangningyu',
+  title: '一起漂流',
+  description: '你和香宁雨已经熟到能一起整活：周末说走就走，漂流安排！尖叫和笑声一路飙到终点。',
+  cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/c90a44066ff6b582b9e05bb589d62534-20251216-215915.jpg',
+  when: (state) => (state.relationships.find(r => r.name === '香宁雨')?.affinity ?? 0) >= 50,
+  actionLabel: '一起漂流',
+  actionPrompt:
+    '这是一个已解锁的特殊事件，请生成“一起漂流”剧情：主角尚丙奇和香宁雨去漂流（路上约车/集合、穿救生衣、上船前嘴硬、开局被水拍脸、互相泼水整活、终点合影），香宁雨一直乐呵呵、开得起玩笑，你可以开她玩笑叫她“傻逼”但氛围要友好；体现有得有失（心情社交大涨但体力消耗/花钱/第二天累）；结尾用CG照片定格收束。',
+},
+
+
+
+
+  {
+    id: 'event_db_study_hms',
+    title: '努力学习数据库',
+    description: '学业终于卷起来了：你开始猛学数据库，然后在“数据库”里遇到小可爱 hms。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/a4300064ec56208b7761d21911001867-20251216-213729.png',
+    when: (state) => state.stats.academic > 50,
+    actionLabel: '努力学习数据库',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“努力学习数据库”剧情：主角尚丙奇在学数据库（SQL/索引/范式/ER图等学习场景），过程中以轻松搞笑方式遇到“小可爱hms”（路人），有一点点暧昧但不进入恋爱系统；结尾用CG照片定格收束。',
+  },
+
+  {
+    id: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/bdb58ff785eb6dd7043efd65ed707a8d-20251216-215003.jpg',
+    title: '你你你你要跳舞吗',
+    description: '社交值上来了：你被学长学姐抓去参加学院迎新晚会的舞蹈节目，社死与高光一线之隔。',
+    cgUrl: 'https://your-cg-url-here.png',
+    when: (state) => state.stats.social > 40,
+    actionLabel: '你你你你要跳舞吗',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“你你你你要跳舞吗”剧情：主角尚丙奇参加学院迎新晚会舞蹈节目（排练、走位、卡拍、服装、彩排、上台前紧张），可穿插同学吐槽/鼓励与小型社死（比如动作记错/差点摔/忘了走位），但整体基调搞笑温暖；结尾用CG照片定格收束。',
+  },
+
+  {
+    id: 'event_db_allnighter_team',
+    title: '数据库通宵之夜',
+    description: '学业卷到位了：为了数据库课设，10个人在深夜集结，集体奋战到天亮。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/30418a9b5578d83e5b1808b32495428b-20251216-215252.jpg',
+    when: (state) => state.stats.academic > 55,
+    actionLabel: '数据库通宵之夜',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“数据库通宵之夜”剧情：背景是数据库课设ddl压顶，10个人一起通宵（分工、写SQL/建表/索引优化/接口对接、现场debug、有人外卖续命、有人崩溃但被拉回），要有真实校园细节（机房/自习室/实验室夜灯、咖啡味、键盘声），体现“有得有失”（体力和心情消耗但学业/社交提升）；结尾用CG照片定格收束。',
+  },
+
+  {
+    id: 'event_dorm_dinner_roommates',
+    title: '寝室聚餐',
+    description: '你和三个室友的关系都热起来了：今晚寝室开席，边吃边吐槽，快乐直接拉满。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/144f869351a3feeacc71e5165ecdf16d-20251216-215359.jpg',
+    when: (state) => {
+      const need = ['梁乔', '李振宇', '赵翀'];
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) > 40);
+    },
+    actionLabel: '寝室聚餐',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“寝室聚餐”剧情：地点在寝室，三位室友都到场（梁乔抽象表情包梗/变形金刚，李振宇整活/健身狂魔气质，赵翀聒噪讲学生会和搭讪失败），主角尚丙奇负责吐槽和接梗；要有具体食物与场景细节（外卖袋、一次性筷子、桌面很挤、电脑还开着写代码），体现“有得有失”（心情上升但可能花钱/第二天困）；结尾用CG照片定格收束。',
+  },
+
+  
+  {
+    id: 'event_welcome_video_team_with_chenkai',
+    title: '迎新晚会视频组',
+    description: '你和陈垲昕成了朋友：他把你拉进迎新晚会的视频组，拍摄、剪辑、通宵交片一条龙。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/76b254572adb49cff6d2fad00d93064f-20251216-215454.jpg',
+    when: (state) => {
+      const r = state.relationships.find(x => x.name === '陈垲昕');
+      return !!r && (r.status === 'Friend' || r.status === 'Close Friend' || r.affinity >= 50);
+    },
+    actionLabel: '迎新晚会视频组',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“迎新晚会视频组”剧情：主角尚丙奇被陈垲昕拉进学院迎新晚会视频组，内容包括分镜/踩点/拍摄/收音/现场救火/剪辑导出/交片ddl；陈垲昕说话三句不离数据和流程，严肃认真但关键时刻很靠谱；要写出真实校园细节（设备、走廊灯光、后台嘈杂、电脑风扇声、熬夜咖啡味），体现有得有失（社交/学业提升但体力心情消耗）；结尾用CG照片定格收束。',
+  },
+
+  {
+    id: 'event_bike_sprint_low_energy',
+    title: '自行车狂奔',
+    description: '体力告急但事情不等人：你骑着共享单车在嘉定狂风里狂奔，感觉肺在报警。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/1ef39e3e23624755b579bcd63630f1ac-20251216-215600.jpg',
+    when: (state) => state.stats.energy < 40,
+    actionLabel: '自行车狂奔',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“自行车狂奔”剧情：主角尚丙奇在体力偏低的情况下被迫骑共享单车狂奔（赶早八/赶ddl/赶约饭/赶进校门等任选其一），写出嘉定校区真实细节（夜风、路灯、保安、校门口、路面颠簸、耳机里音乐/微信语音），体现有得有失（可能省时间但体力/心情波动），允许轻微社死或小意外但不恶意；结尾用CG照片定格收束。',
+  }
+
+
+
+
+
+
+
+
+];
+
 
 
 // --- Main Component ---
@@ -126,6 +398,23 @@ const App: React.FC = () => {
   // Achievements: store birthday CGs (image URLs)
   const [achievements, setAchievements] = useState<Array<{ id: string; url: string; createdAt: string }>>([]);
   
+  // 解锁事件系统
+  // --- Unlock System ---
+  const [unlockModal, setUnlockModal] = useState<UnlockRule | null>(null);
+  const [unlockedEventIds, setUnlockedEventIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('unlocked_events') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const unlockedEventIdsRef = useRef<Set<string>>(new Set(unlockedEventIds));
+
+  useEffect(() => {
+    unlockedEventIdsRef.current = new Set(unlockedEventIds);
+  }, [unlockedEventIds]);
+
+
   // Game State
   const playerName = '尚丙奇';
   const [playerGender, setPlayerGender] = useState<Gender>(Gender.Male);
@@ -156,7 +445,7 @@ const App: React.FC = () => {
 
   // Check for local save on mount
   useEffect(() => {
-    const saved = localStorage.getItem('liangqiao_save');
+    const saved = localStorage.getItem('oliver_save');
     if (saved) setHasSave(true);
   }, []);
 
@@ -182,6 +471,52 @@ const App: React.FC = () => {
       console.warn('Failed to load achievements', e);
     }
   }, []);
+
+  // 解锁新事件
+  useEffect(() => {
+    // 如果正在显示解锁弹窗，就先不弹新的（避免连环弹）
+    if (unlockModal) return;
+
+    const newlyUnlocked: UnlockRule[] = [];
+
+    for (const rule of UNLOCK_RULES) {
+      if (unlockedEventIdsRef.current.has(rule.id)) continue;
+      if (!rule.when(gameState)) continue;
+
+      // 立刻写入 ref，避免 StrictMode 下 useEffect 双执行导致重复解锁
+      unlockedEventIdsRef.current.add(rule.id);
+      newlyUnlocked.push(rule);
+    }
+
+    if (newlyUnlocked.length === 0) return;
+
+    // 持久化
+    const nextIds = Array.from(unlockedEventIdsRef.current);
+    setUnlockedEventIds(nextIds);
+    localStorage.setItem('unlocked_events', JSON.stringify(nextIds));
+
+    // 记录日志（一次性把解锁写进 history）
+    setGameState(prev => {
+      const baseTurn =
+        prev.week * 100 +
+        prev.day * 10 +
+        (prev.timeSlot === TimeSlot.Morning ? 1 : prev.timeSlot === TimeSlot.Afternoon ? 2 : 3);
+
+      const logs: LogEntry[] = newlyUnlocked.map((r, idx) => ({
+        id: `${Date.now()}_unlock_${r.id}_${idx}`,
+        text: `【解锁新事件】${r.title}（获得CG）`,
+        type: 'event',
+        turn: baseTurn,
+        feedback: { stats: '', time: `第${prev.week}周 星期${prev.day}` },
+      }));
+
+      return { ...prev, history: [...prev.history, ...logs] };
+    });
+
+    // 弹出第一条（如果你后面要做队列，再扩展）
+    setUnlockModal(newlyUnlocked[0]);
+  }, [gameState.stats, gameState.relationships, gameState.week, gameState.day, gameState.timeSlot, unlockModal]);
+
 
   // Persist achievements to localStorage
   useEffect(() => {
@@ -210,11 +545,15 @@ const App: React.FC = () => {
       if (wish.isCompleted) return wish; // Already done
 
       let completed = false;
+
       if (wish.id === 'career_offer') completed = state.stats.research >= 85 && state.stats.social >= 60;
       if (wish.id === 'career_gpa') completed = state.stats.academic >= 90;
       if (wish.id === 'career_money') completed = state.stats.money >= 8000;
-      if (wish.id === 'love_date') completed = state.relationships.some(r => r.affinity >= 60);
-      if (wish.id === 'love_popular') completed = state.relationships.filter(r => r.affinity >= 50).length >= 3;
+
+      // Love -> Friendship
+      if (wish.id === 'friend_bond') completed = state.relationships.some(r => r.affinity >= 60);
+      if (wish.id === 'friend_popular') completed = state.relationships.filter(r => r.affinity >= 50).length >= 3;
+
       if (wish.id === 'social_king') completed = state.stats.social >= 85;
       if (wish.id === 'social_party') completed = state.stats.mood >= 95;
 
@@ -232,7 +571,7 @@ const App: React.FC = () => {
       wishes: finalWishes,
       history: [{
         id: 'init',
-        text: `欢迎来到同济大学嘉定校区，${playerName}！你是软件工程专业的老油条了。济事楼的代码、满天星的美食、还有未知的邂逅都在等你。这学期共有14天，为了那个完美的结局，出发吧！`,
+        text: `欢迎来到同济大学嘉定校区，${playerName}！你是软件工程专业的老油条了。济事楼的代码、满天星的美食、还有未知的邂逅都在等你。本科生涯共计3周，为了那个完美的结局，出发吧！`,
         type: 'system',
         turn: 0
       }]
@@ -242,13 +581,13 @@ const App: React.FC = () => {
   };
 
   const saveGame = () => {
-      localStorage.setItem('liangqiao_save', JSON.stringify(gameState));
+      localStorage.setItem('oliver_save', JSON.stringify(gameState));
       setHasSave(true);
       alert('游戏进度已保存！');
   };
 
   const loadGame = () => {
-      const saved = localStorage.getItem('liangqiao_save');
+      const saved = localStorage.getItem('oliver_save');
       if (saved) {
           try {
               const loadedState = JSON.parse(saved);
@@ -597,6 +936,7 @@ const App: React.FC = () => {
 
   const getUnreadCount = () => gameState.messages.filter(m => !m.isRead).length;
   const canSave = gameState.day === 7 && gameState.timeSlot === TimeSlot.Evening;
+  const [genderTip, setGenderTip] = useState('');
 
   // --- Screens ---
 
@@ -606,13 +946,45 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full animate-fadeIn">
           <h1 className="text-3xl font-bold text-slate-800 mb-2">尚丙奇的学期</h1>
-          <p className="text-slate-500 mb-6">同济大学软工生活模拟器</p>
+          <p className="text-slate-500 mb-6">同济软件模拟器</p>
           <div className="space-y-4">
             <p className="font-medium text-slate-700">请选择你的性别</p>
+            
+
             <div className="grid grid-cols-2 gap-4">
-               <button onClick={() => setPlayerGender(Gender.Male)} className={`py-4 rounded-xl border-2 font-bold ${playerGender===Gender.Male?'border-blue-500 bg-blue-50 text-blue-700':'border-slate-200 text-slate-500'}`}>男生</button>
-               <button onClick={() => setPlayerGender(Gender.Female)} className={`py-4 rounded-xl border-2 font-bold ${playerGender===Gender.Female?'border-pink-500 bg-pink-50 text-pink-700':'border-slate-200 text-slate-500'}`}>女生</button>
+              <button
+                onClick={() => setPlayerGender(Gender.Male)}
+                className={`py-4 rounded-xl border-2 font-bold ${
+                  playerGender === Gender.Male
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-slate-200 text-slate-500'
+                }`}
+              >
+                男生
+              </button>
+
+              <button
+                type="button"
+                aria-disabled="true"
+                onClick={() => {
+                  setGenderTip('你还想变性？？');
+                  // 也可以用 alert：alert('你还想变性？？')
+                  setTimeout(() => setGenderTip(''), 3000);
+                }}
+                className="py-4 rounded-xl border-2 font-bold border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+              >
+                女生
+              </button>
             </div>
+
+            {genderTip && (
+              <div className="mt-3 text-center text-sm text-rose-600 font-semibold">
+                {genderTip}
+              </div>
+            )}
+
+
+
             <button onClick={() => setSetupStep('wishes')} className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold mt-4 flex items-center justify-center gap-2">下一步 <ChevronRight size={18}/></button>
             {hasSave && <button onClick={loadGame} className="w-full bg-white border border-slate-300 text-slate-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Upload size={18}/> 读取存档</button>}
           
@@ -661,9 +1033,9 @@ const App: React.FC = () => {
             </div>
             {/* Love */}
             <div>
-              <h3 className="flex items-center gap-2 font-bold text-pink-600 mb-2"><Heart size={18}/> 爱情愿望</h3>
+              <h3 className="flex items-center gap-2 font-bold text-pink-600 mb-2"><Heart size={18}/> 友谊愿望</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {LOVE_WISHES.map(w => (
+                {FRIENDSHIP_WISHES.map(w => (
                   <button key={w.id} onClick={() => setSelectedWishes(p => ({...p, love: w}))} className={`p-3 rounded-xl border-2 text-left transition-all ${selectedWishes.love?.id===w.id ? 'border-pink-500 bg-pink-50' : 'border-slate-100 hover:border-pink-200'}`}>
                     <div className="font-bold text-slate-800 text-sm">{w.label}</div>
                     <div className="text-xs text-slate-500 mt-1">{w.description}</div>
@@ -1021,6 +1393,60 @@ const App: React.FC = () => {
       </div>
 
       {/* --- MODALS --- */}
+
+
+      {/* UNLOCK MODAL */}
+      {unlockModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-emerald-50">
+              <h2 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                <Gift size={18} className="text-emerald-600" />
+                解锁新事件
+              </h2>
+              <button onClick={() => setUnlockModal(null)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 bg-slate-50">
+              <div>
+                <div className="text-xl font-bold text-slate-900">{unlockModal.title}</div>
+                <div className="text-sm text-slate-600 mt-1">{unlockModal.description}</div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <img
+                  src={unlockModal.cgUrl}
+                  alt={unlockModal.title}
+                  className="w-full h-56 object-cover"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const rule = unlockModal;
+                    setUnlockModal(null);
+                    // 立刻触发事件（可选）
+                    handleAction(rule.actionLabel ?? rule.title, rule.actionPrompt);
+                  }}
+                  className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors"
+                >
+                  立刻体验
+                </button>
+                <button
+                  onClick={() => setUnlockModal(null)}
+                  className="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold"
+                >
+                  稍后
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* SMS MODAL - CONTACTS VIEW */}
       {showMessages && (
@@ -1457,9 +1883,9 @@ const App: React.FC = () => {
                 // Cheap eat
                 opts.push({ id: 'eat_cheapest', label: '食堂快餐', cost: 8, mood: 3, energy: 8, desc: '便宜实惠，微幅恢复。' });
                 // Normal eat
-                opts.push({ id: 'eat_normal', label: '路边小馆', cost: 28, mood: 8, energy: 20, desc: '常规选择，恢复适中。' });
+                opts.push({ id: 'eat_normal', label: '鱼小悦', cost: 28, mood: 8, energy: 20, desc: '常规选择，恢复适中。' });
                 // Luxury
-                opts.push({ id: 'eat_luxury', label: '满天星餐厅', cost: 120, mood: 20, energy: 40, desc: '奢华体验，大幅恢复并小幅提高心情。' });
+                opts.push({ id: 'eat_luxury', label: '海底捞', cost: 120, mood: 20, energy: 40, desc: '奢华体验，大幅恢复并小幅提高心情。' });
                 return opts.map(opt => (
                   <div key={opt.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200">
                     <div>
