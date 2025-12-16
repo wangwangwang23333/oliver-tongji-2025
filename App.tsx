@@ -1241,7 +1241,7 @@ const App: React.FC = () => {
   if (gameState.gameEnding && endingStage > 0) {
       const { career, love, birthday } = gameState.gameEnding as any;
       const content = endingStage === 1 ? career : endingStage === 2 ? love : birthday;
-      const title = endingStage === 1 ? "职业结局" : endingStage === 2 ? "情感归宿" : "生日快乐";
+      const title = endingStage === 1 ? "职业结局" : endingStage === 2 ? "十年之后" : "生日快乐";
       const bgColor = endingStage === 1 ? "from-sky-50 via-blue-50 to-indigo-50" : endingStage === 2 ? "from-rose-50 via-pink-50 to-red-50" : "from-amber-50 via-yellow-50 to-orange-50";
       const accentGradient = endingStage === 1 ? "from-sky-300 to-blue-300" : endingStage === 2 ? "from-rose-300 to-pink-300" : "from-amber-300 to-yellow-300";
       const iconBgColor = endingStage === 1 ? "bg-sky-100" : endingStage === 2 ? "bg-rose-100" : "bg-amber-100";
@@ -1272,7 +1272,7 @@ const App: React.FC = () => {
                      <Cake size={28} className={textColor} />}
                   </div>
                   <h1 className={`text-4xl md:text-5xl font-bold ${textColor} mb-2`}>{title}</h1>
-                  <p className="text-slate-600 text-sm">你的学期故事在这里继续...</p>
+                  <p className="text-slate-600 text-sm">你的故事在这里继续...</p>
                 </div>
 
                 {/* Content card with proper scrolling */}
