@@ -89,7 +89,7 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
     name: '香宁雨',
     affinity: 10,
     status: 'Stranger',
-    description: '二次元。爱打瓦罗兰特；在 SAP 实习，社交圈很广；追星肖战。',
+    description: '二次元。爱打瓦罗兰特；在 SAP 实习，社交圈很广；二次元。',
   },
   {
     name: '陈垲昕',
