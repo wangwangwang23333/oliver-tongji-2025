@@ -267,7 +267,7 @@ const UNLOCK_RULES: UnlockRule[] = [
     cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/785c6996523e032fce01075bbbfdf4fa-20251216-213456.png',
     when: (state) => {
       const r = state.relationships.find(x => x.name === '王立友');
-      const knownWang = !!r && (r.status !== 'Stranger' || r.affinity >=40); // “认识”
+      const knownWang = !!r && (r.affinity >=40); // “认识”
       const moodOK = state.stats.mood >= 60;
       return knownWang && moodOK;
     },
