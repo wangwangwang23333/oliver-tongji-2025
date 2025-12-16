@@ -75,25 +75,25 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   // Friends (start as strangers)
   {
     name: '王立友',
-    affinity: 10,
+    affinity: 20,
     status: 'Stranger',
     description: '小胖墩。沉迷英雄联盟；嘴上说减肥，手里抱外卖。',
   },
   {
     name: '汪明杰',
-    affinity: 10,
+    affinity: 20,
     status: 'Stranger',
     description: '好朋友。嘴贫但靠谱，擅长用段子化解尴尬；偶尔会突然认真起来。',
   },
   {
     name: '香宁雨',
-    affinity: 10,
+    affinity: 20,
     status: 'Stranger',
     description: '二次元。爱打瓦罗兰特；在 SAP 实习，社交圈很广；二次元。',
   },
   {
     name: '陈垲昕',
-    affinity: 10,
+    affinity: 20,
     status: 'Stranger',
     description: '科研大佬。潮汕人，爱摇滚；三句不离论文和实验数据；为人严肃认真。',
   },
@@ -101,7 +101,7 @@ const INITIAL_RELATIONSHIPS: Relationship[] = [
   // Mentor (also starts as stranger)
   {
     name: '张荣庆',
-    affinity: 10,
+    affinity: 20,
     status: 'Stranger',
     description: '不严厉的导师。年轻有为，私下爱玩各种游戏；没事就来 push 你的科研进度。',
   },
@@ -176,7 +176,7 @@ const UNLOCK_RULES: UnlockRule[] = [
     cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/8f86a4f55b9820c265685ed6c65b3cd4-20251216-215714.jpg',
     when: (state) => {
       const need = ['王立友', '汪明杰', '梁乔'];
-      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 40);
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 30);
     },
     actionLabel: '疫情偷偷聚餐',
     actionPrompt:
@@ -189,7 +189,7 @@ const UNLOCK_RULES: UnlockRule[] = [
     cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/img1-20251216-211624.png',
     when: (state) => {
       const need = ['王立友', '汪明杰', '梁乔'];
-      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 60);
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 40);
     },
     actionLabel: '黄山旅游',
     actionPrompt: '这是一个已解锁的特殊事件，请生成“黄山旅游”剧情；氛围参考CG真实照片（旅行、兄弟互动、路上小插曲），结尾给一个“照片定格”的桥段。',
@@ -214,7 +214,7 @@ const UNLOCK_RULES: UnlockRule[] = [
     cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20251216212336_39%20(1)-20251216-212433.png',
     when: (state) => {
       const need = ['王立友', '汪明杰', '梁乔'];
-      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 80);
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 50);
     },
     actionLabel: '丽水之旅',
     actionPrompt: '这是一个已解锁的特殊事件，请生成“丽水之旅”剧情；氛围参考CG真实照片（旅行vlog感、兄弟嘴碎互损、夜宵/民宿聊天），带一点成长感。',
@@ -226,15 +226,12 @@ const UNLOCK_RULES: UnlockRule[] = [
     description: '学期进入尾声：大家终于凑齐，拍下这张属于你们的“阶段性毕业照”。',
     cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/811b39e5f36b04feaca558f261c95a69-20251216-212821.png',
     when: (state) => {
-      const need = ['王立友', '汪明杰', '梁乔', '香宁雨', '李振宇'];
-      const affinityOK = need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 30);
-
       // ✅最后 5 天：通用写法（不怕你以后改 MAX_WEEKS）
       const totalDays = MAX_WEEKS * 7;
       const absDay = (state.week - 1) * 7 + state.day; // 1..totalDays
       const isLast5Days = absDay >= totalDays - 4;
 
-      return affinityOK && isLast5Days;
+      return isLast5Days;
     },
     actionLabel: '毕业照',
     actionPrompt: '这是一个已解锁的特殊事件，请生成“毕业照”剧情；围绕大家凑齐拍照的过程（排队、互损、尚丙奇作为摄影师指挥、临时状况），最后用CG照片作为定格收束。',
@@ -283,7 +280,7 @@ const UNLOCK_RULES: UnlockRule[] = [
   title: '一起漂流',
   description: '你和香宁雨已经熟到能一起整活：周末说走就走，漂流安排！尖叫和笑声一路飙到终点。',
   cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/c90a44066ff6b582b9e05bb589d62534-20251216-215915.jpg',
-  when: (state) => (state.relationships.find(r => r.name === '香宁雨')?.affinity ?? 0) >= 50,
+  when: (state) => (state.relationships.find(r => r.name === '香宁雨')?.affinity ?? 0) >= 40,
   actionLabel: '一起漂流',
   actionPrompt:
     '这是一个已解锁的特殊事件，请生成“一起漂流”剧情：主角尚丙奇和香宁雨去漂流（路上约车/集合、穿救生衣、上船前嘴硬、开局被水拍脸、互相泼水整活、终点合影），香宁雨一直乐呵呵、开得起玩笑，你可以开她玩笑叫她“傻逼”但氛围要友好；体现有得有失（心情社交大涨但体力消耗/花钱/第二天累）；结尾用CG照片定格收束。',
