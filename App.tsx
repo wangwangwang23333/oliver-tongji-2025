@@ -169,19 +169,19 @@ type UnlockRule = {
 };
 
 const UNLOCK_RULES: UnlockRule[] = [
-  {
-  id: 'event_covid_secret_dinner',
-  title: '疫情偷偷聚餐',
-  description: '特殊时期的嘉定有点安静，但你们还是凑在一起：一顿“偷偷的聚餐”，把压抑吃成了热气腾腾的安全感。',
-  cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/8f86a4f55b9820c265685ed6c65b3cd4-20251216-215714.jpg',
-  when: (state) => {
-    const need = ['王立友', '汪明杰', '梁乔'];
-    return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 40);
+    {
+    id: 'event_covid_secret_dinner',
+    title: '疫情偷偷聚餐',
+    description: '特殊时期的嘉定有点安静，但你们还是凑在一起：一顿“偷偷的聚餐”，把压抑吃成了热气腾腾的安全感。',
+    cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/8f86a4f55b9820c265685ed6c65b3cd4-20251216-215714.jpg',
+    when: (state) => {
+      const need = ['王立友', '汪明杰', '梁乔'];
+      return need.every((name) => (state.relationships.find(r => r.name === name)?.affinity ?? 0) >= 40);
+    },
+    actionLabel: '疫情偷偷聚餐',
+    actionPrompt:
+      '这是一个已解锁的特殊事件，请生成“疫情偷偷聚餐”剧情：背景是疫情期间校园/宿舍管理更严格（2022年），主角尚丙奇和王立友/汪明杰/梁乔想办法凑一顿饭（外卖、泡面、偷偷小馆、宿舍小桌任选其一）；重点写“压抑中的温暖”和兄弟互动：汪明杰用段子化解焦虑，王立友温和长篇大论讲道理，梁乔抽象玩梗；体现有得有失（心情上升但有点紧张/花钱/体力消耗）；结尾用CG照片定格收束。',
   },
-  actionLabel: '疫情偷偷聚餐',
-  actionPrompt:
-    '这是一个已解锁的特殊事件，请生成“疫情偷偷聚餐”剧情：背景是疫情期间校园/宿舍管理更严格（2022年），主角尚丙奇和王立友/汪明杰/梁乔想办法凑一顿饭（外卖、泡面、偷偷小馆、宿舍小桌任选其一）；重点写“压抑中的温暖”和兄弟互动：汪明杰用段子化解焦虑，王立友温和长篇大论讲道理，梁乔抽象玩梗；体现有得有失（心情上升但有点紧张/花钱/体力消耗）；结尾用CG照片定格收束。',
-},
   {
     id: 'event_huangshan_trip',
     title: '黄山旅游',
@@ -194,6 +194,18 @@ const UNLOCK_RULES: UnlockRule[] = [
     actionLabel: '黄山旅游',
     actionPrompt: '这是一个已解锁的特殊事件，请生成“黄山旅游”剧情；氛围参考CG真实照片（旅行、兄弟互动、路上小插曲），结尾给一个“照片定格”的桥段。',
   },
+
+  {
+  id: 'event_rich_bro',
+  title: '哥有钱',
+  description: '兜里突然鼓了：当你发现余额超过 400 的那一刻，整个人说话都硬气了。',
+  cgUrl: 'https://upic-1301780692.cos.ap-shanghai.myqcloud.com/59666cc6aff336d48b75c71f91abef7e-20251216-221818.jpg',
+  when: (state) => state.stats.money > 400,
+  actionLabel: '哥有钱',
+  actionPrompt:
+    '这是一个已解锁的特殊事件，请生成“哥有钱”剧情：主角尚丙奇发现自己存款/余额超过400，产生短暂的“我是不是也算小康了”的错觉；可以去满天星/小馆/奶茶店小小挥霍，也可以请室友/朋友吃点东西（但不要写成土豪爽文），要有校园生活细节和自嘲；体现有得有失（心情上升但钱会花掉/体力消耗/第二天继续卷）；结尾用CG照片定格收束。',
+},
+
 
   {
     id: 'event_lishui_trip',
@@ -1004,6 +1016,68 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Unlocked Achievements (Unlocked Events) */}
+            <div className="mt-6">
+              <h3 className="text-sm font-bold text-slate-700 mb-2">已解锁成就</h3>
+
+              {(() => {
+                // 根据 unlockedEventIds 映射出已解锁规则
+                const unlockedRules = UNLOCK_RULES.filter(r => unlockedEventIds.includes(r.id));
+
+                if (unlockedRules.length === 0) {
+                  return <div className="text-xs text-slate-400">还没有解锁成就，多去行动触发事件吧。</div>;
+                }
+
+                return (
+                  <div className="grid grid-cols-2 gap-2">
+                    {unlockedRules.map(rule => (
+                      <div key={rule.id} className="relative border rounded-xl overflow-hidden bg-white">
+                        <img
+                          src={rule.cgUrl}
+                          alt={rule.title}
+                          className="w-full h-24 object-cover cursor-pointer"
+                          onClick={() => window.open(rule.cgUrl, "_blank")}
+                        />
+
+                        <div className="p-2">
+                          <div className="text-xs font-bold text-slate-800 truncate">{rule.title}</div>
+                          <div className="text-[10px] text-slate-500 line-clamp-2">{rule.description}</div>
+
+                          <button
+                            onClick={() => {
+                              // 可选：直接体验该事件剧情（如果你想在首页就能触发）
+                              // setSetupStep('done'); setHasStarted(true); handleAction(rule.actionLabel, rule.actionPrompt);
+
+                              // 这里先做成“预览弹窗”：复用你已有 unlockModal
+                              setUnlockModal(rule);
+                            }}
+                            className="mt-2 w-full text-[11px] py-1 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-800"
+                          >
+                            好的
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            // 删除解锁记录（同时同步 localStorage）
+                            setUnlockedEventIds(prev => {
+                              const next = prev.filter(id => id !== rule.id);
+                              localStorage.setItem("unlocked_events", JSON.stringify(next));
+                              return next;
+                            });
+                          }}
+                          className="absolute top-1 right-1 text-[10px] bg-white/85 px-2 py-0.5 rounded"
+                        >
+                          删除
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
           </div>
         </div>
       </div>
@@ -1415,13 +1489,14 @@ const App: React.FC = () => {
                 <div className="text-sm text-slate-600 mt-1">{unlockModal.description}</div>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+             <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                 <img
                   src={unlockModal.cgUrl}
                   alt={unlockModal.title}
-                  className="w-full h-56 object-cover"
+                  className="w-full h-56 object-contain"
                 />
               </div>
+
 
               <div className="flex gap-3">
                 <button
